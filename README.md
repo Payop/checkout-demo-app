@@ -1,34 +1,33 @@
 Payop Checkout Demo Application
 --
 
+This is Payop Demo Application with Checkout integration.
+This application describe integration using Server-To-Server api. 
+
+### Please note!!!! 
+
+**This is demo application. It's mostly describe only integration flow.
+ We don't pay attention to code quality or errors handling.
+ In the process of integrating your application, you must pay attention to error handling yourself.**
+
+
 ## Running on dev
-```shell script
-    php bin/console doctrine:database:create
-```
 
-## Checkout parameters:
-* invoiceIdentifier - required
-* payCurrency - required (can be taken from invoice)
-* defaultCurrency - required (can be taken from invoice)
-* customerData - required (can be taken from invoice)
-* paymentMethod - required (can be taken from invoice)
-* geoInformation - required (at least country required for several connectors). Maybe require to allow to add customer[country] to request
-* customer - several fields required. Email required always
-* cardToken - [required] if payment method from_type==cards
+* Clone application (`git clone`).
+* Install Docker and Docker Compose.
+* Go to the application directory and create config file.
+ Current application working under Docker and using environments variables for configuration.
+    ```shell script
+        cp .env.dist .env
+    ``` 
+* Setup configuration parameters according needs and your payop application setting.
+ 
+    *Please note!!! Demo application require a few parameters which you can find in Payop merchant admin panel*
 
+* While you are finished with configuration, run docker compose
+    ```shell script
+      make up
+    ```
 
+That's all. Application should start and should be available using port from config file (*NGINX_PORT*). 
 
-
-Docs: 
-- https://developer.rbk.money/api/
-- https://rbkmoney.github.io/webhooks-events-api/
-
-## Run on DEV
-
-Create `.env` file and put `ENVIRONMENT=dev` variable there. 
-Then run:
-```
-    $ make up
-```    
-
-## Run on PROD

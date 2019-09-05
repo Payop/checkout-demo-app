@@ -199,7 +199,7 @@ class PayopClient
     ) : array {
         $params = [
             'invoiceIdentifier' => $invoiceId,
-            'customerData' => $customer,
+            'customer' => $customer,
             'cardToken' => $cardToken,
             'checkStatusUrl' => $checkStatusUrl,
         ];
@@ -256,6 +256,23 @@ class PayopClient
         $response = $this->client->request(
             Request::METHOD_GET,
             "checkout/check-transaction-status/{$txid}"
+        );
+
+        return json_decode($response->getBody()->getContents(), true)['data'];
+    }
+
+    /**
+     * @param string $txid
+     *
+     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getTransaction(string $txid) : array
+    {
+        $response = $this->client->request(
+            Request::METHOD_GET,
+            "transactions/{$txid}",
+            [RequestOptions::HEADERS => ['token' => $this->accessToken]]
         );
 
         return json_decode($response->getBody()->getContents(), true)['data'];

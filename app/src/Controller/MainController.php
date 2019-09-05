@@ -7,6 +7,7 @@ use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Service\PayopClient;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -282,6 +283,44 @@ class MainController extends AbstractController
             'order' => $order,
             'state' => $state,
         ]);
+    }
+
+    /**
+     * @Route("/ipn", name="ipn")
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param \App\Service\PayopClient $client
+     * @param \App\Repository\OrderRepository $or
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function ipn(
+        Request $request,
+        PayopClient $client,
+        OrderRepository $or,
+        LoggerInterface $logger
+    ) : Response {
+        $data = json_decode($request->getContent(), true);
+        $logger->info('IPN Request', [
+            'request' => $data,
+            'method' => $request->getMethod(),
+        ]);
+
+        $tx = $client->getTransaction($data['invoice']['txid']);
+        $order = $or->find($tx['orderId']);
+
+        if ($tx['state'] === 2) {
+            $order->setStatus(Order::STATUS_ACCEPTED);
+            return new Response('', Response::HTTP_OK);
+        }
+
+        if (in_array($tx['state'], [3, 5], false)) {
+            $order->setStatus(Order::STATUS_FAILED);
+            return new Response('', Response::HTTP_OK);
+        }
+
+        return new Response('', Response::HTTP_PRECONDITION_FAILED);
     }
 
     /**
