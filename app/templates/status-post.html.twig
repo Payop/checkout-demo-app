@@ -4,7 +4,7 @@
     <div class="mt-5">
         <p class="text-center">POST redirect</p>
         <form method="{{ form.method }}" action="{{ form.url }}" id="status-form">
-            {% for name, value in form %}
+            {% for name, value in form.fields %}
                 <input type="hidden" name="{{ name }}" value="{{ value }}">
             {% endfor %}
         </form>

@@ -291,6 +291,7 @@ class MainController extends AbstractController
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @param \App\Service\PayopClient $client
      * @param \App\Repository\OrderRepository $or
+     * @param \Doctrine\ORM\EntityManagerInterface $em
      *
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -299,6 +300,7 @@ class MainController extends AbstractController
         Request $request,
         PayopClient $client,
         OrderRepository $or,
+        EntityManagerInterface $em,
         LoggerInterface $logger
     ) : Response {
         $data = json_decode($request->getContent(), true);
@@ -312,11 +314,15 @@ class MainController extends AbstractController
 
         if ($tx['state'] === 2) {
             $order->setStatus(Order::STATUS_ACCEPTED);
+            $em->persist($order);
+            $em->flush();
             return new Response('', Response::HTTP_OK);
         }
 
         if (in_array($tx['state'], [3, 5], false)) {
             $order->setStatus(Order::STATUS_FAILED);
+            $em->persist($order);
+            $em->flush();
             return new Response('', Response::HTTP_OK);
         }
 
