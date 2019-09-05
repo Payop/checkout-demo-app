@@ -36,3 +36,4 @@ services:
             - '%env(PAYOP_APP_PUBLIC_KEY)%'
             - '%env(PAYOP_APP_SECRET_KEY)%'
             - '%env(PAYOP_USER_ACCESS_TOKEN)%'
+            - '@Symfony\Contracts\Cache\CacheInterface'

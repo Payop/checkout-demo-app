@@ -1,0 +1,30 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="mt-5">
+        <p class="text-center">Enter Bank card data</p>
+        <div class="mt-5">
+            <form method="POST">
+                <div class="col-12 mt-3">
+                    <label>Pan (Card number)</label>
+                    <input type="text" name="pan" value="{{ pan }}">
+                </div>
+                <div class="col-6 mt-3">
+                    <label>Expiration date (format: mm/yy)</label>
+                    <input type="text" name="expirationDate" value="{{ expirationDate }}">
+                </div>
+                <div class="col-6 mt-3">
+                    <label>CVV</label>
+                    <input type="text" name="cvv" value="{{ cvv }}">
+                </div>
+                <div class="col-12 mt-3">
+                    <label>Cardholder name</label>
+                    <input type="text" name="holderName" value="{{ holderName }}">
+                </div>
+                <div class="col-12 mt-5">
+                    <button type="submit" class="btn btn-primary btn-sm btn-block">Create transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

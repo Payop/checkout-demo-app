@@ -1,0 +1,18 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="mt-5">
+        <p class="text-center">POST redirect</p>
+        <form method="{{ form.method }}" action="{{ form.url }}" id="status-form">
+            {% for name, value in form %}
+                <input type="hidden" name="{{ name }}" value="{{ value }}">
+            {% endfor %}
+        </form>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById('status-form').submit();
+        }, 5000);
+    </script>
+{% endblock %}

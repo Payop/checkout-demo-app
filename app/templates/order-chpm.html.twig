@@ -14,7 +14,7 @@
                     <select name="pm" id="pmSelect" required>
                         {% for pm in paymentMethods %}
                             <option value="{{ pm.identifier }}"
-                                    data-fields="{{ pm.config.fields|json_encode() }}">
+                                    data-fields="{{ pm.config.fields|default({})|json_encode() }}">
                                 {{ pm.title }}
                             </option>
                         {% endfor %}

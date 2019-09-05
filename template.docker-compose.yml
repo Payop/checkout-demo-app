@@ -35,6 +35,8 @@ services:
             LINES: "`tput lines`"
             XDEBUG_CONFIG: remote_host=10.254.254.254
             PHP_IDE_CONFIG: serverName=_
+        extra_hosts:
+          - payop.paydo.local:10.254.254.254
         expose:
             - "9000"
         volumes:
