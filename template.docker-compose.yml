@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+    checkout.nginx:
+        image: nginx:stable-alpine
+        container_name: checkout.nginx
+        hostname: checkout.nginx
+        environment:
+            COLUMNS: "`tput cols`"
+            LINES: "`tput lines`"
+            UID_VAR: {{ UID_VALUE }}
+            GID_VAR: {{ GID_VALUE }}
+        volumes:
+            - "./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf"
+            - "./app/public:/var/www/app/public"
+        ports:
+            - "${NGINX_PORT}:80"
+        depends_on:
+            - checkout.php
+        networks:
+            - dev_network
+
+    checkout.php:
+        build:
+            context: ./docker/php/
+        image: checkout.php:{{ APP_ENV }}
+        container_name: checkout.php
+        hostname: checkout.php
+        env_file:
+            - .env
+        environment:
+            UID_VAR: {{ UID_VALUE }}
+            GID_VAR: {{ GID_VALUE }}
+            COLUMNS: "`tput cols`"
+            LINES: "`tput lines`"
+            XDEBUG_CONFIG: remote_host=10.254.254.254
+            PHP_IDE_CONFIG: serverName=_
+        expose:
+            - "9000"
+        volumes:
+            - "./app:/var/www/app:rw"
+        networks:
+            - dev_network
+
+networks:
+    dev_network:
+        driver: bridge

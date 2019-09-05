@@ -1,0 +1,28 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="mt-5">
+        <p class="text-center">Let's choose any product and pay for it.</p>
+        <div class="mt-5">
+            <ul class="list-group list-group-horizontal">
+                {% for product in products %}
+                    <li class="list-group-item">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQhQ3wKVwmlT6FcSMdW3K7WTypG5tJdfMx3pJkuBnuFu0tF6Ll5"
+                             class="rounded mx-auto d-block" alt="{{ product.name }}">
+                        <div class="row">
+                            <div class="col font-weight-bold mt-3">
+                                {{ product.name }}
+                            </div>
+                            <div class="col text-right mt-3 font-weight-bold">
+                                {{ product.price }} {{ product.currency }}
+                            </div>
+                        </div>
+                        <a type="button"
+                           href="{{ path('create-order', {'productId': product.id}) }}"
+                           class="btn btn-primary btn-sm btn-block">By it</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

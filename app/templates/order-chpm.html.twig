@@ -1,0 +1,72 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="mt-5">
+        <p class="text-center">Let's choose payment method to pay order #{{ order.id }}</p>
+        {% for message in app.flashes('error') %}
+            <div class="flash-error">
+                Error: {{ message }}
+            </div>
+        {% endfor %}
+        <div class="mt-5 row h-100 justify-content-center align-items-center">
+            <form method="POST">
+                <div class="col-12">
+                    <select name="pm" id="pmSelect" required>
+                        {% for pm in paymentMethods %}
+                            <option value="{{ pm.identifier }}"
+                                    data-fields="{{ pm.config.fields|json_encode() }}">
+                                {{ pm.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 mt-5" id="fields-container">
+                </div>
+                <div class="col-12 mt-5">
+                    <button type="submit" class="btn btn-primary btn-sm btn-block">Create invoice on Payop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const showFields = (elem) => {
+            const fields = JSON.parse(elem.dataset.fields);
+            const container = document.getElementById('fields-container');
+            container.innerText = '';
+            fields.map(field => {
+                let input = document.createElement('input');
+                input.id = `field-${field.name}`;
+                input.type = field.type;
+                input.name = `fields[${field.name}]`;
+                input.required = field.required;
+                if (field.hasOwnProperty('title')) {
+                    input.placeholder = field.title;
+                } else {
+                    input.placeholder = field.name;
+                }
+                input.classList.add('mt-3');
+
+                let label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.innerHTML = field.name;
+                label.classList.add('mr-2');
+
+                container.appendChild(label);
+                container.appendChild(input);
+                container.appendChild(document.createElement('br'));
+            });
+        };
+
+        let select = document.getElementById('pmSelect');
+        if (select.selectedOptions.length > 0) {
+            showFields(select.selectedOptions.item(0));
+        }
+
+        select.addEventListener('change', (e) => {
+            if (e.target.selectedOptions.length > 0) {
+                showFields(select.selectedOptions.item(0));
+            }
+        });
+    </script>
+{% endblock %}
