@@ -124,7 +124,6 @@ class PayopClient
                 // just example. You can pass decimals: 2|3|4
                 'amount' => number_format($order->getProduct()->getPrice(), 3, '.', ''),
                 'currency' => $order->getProduct()->getCurrency(),
-                // this is not required
                 'items' => [
                     'name' => $order->getProduct()->getName(),
                     'price' => $order->getProduct()->getPrice(),

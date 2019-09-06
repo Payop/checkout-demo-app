@@ -90,10 +90,12 @@ class MainController extends AbstractController
                 'id' => $orderId,
                 'state' => 'succeeded',
             ], UrlGeneratorInterface::ABSOLUTE_URL);
+            $resultUrl = "{$resultUrl}?invoiceId={{invoiceId}}&txid={{txid}}";
             $failUrl = $this->generateUrl('order-result', [
                 'id' => $orderId,
                 'state' => 'failed',
             ], UrlGeneratorInterface::ABSOLUTE_URL);
+            $failUrl = "{$failUrl}?invoiceId={{invoiceId}}&txid={{txid}}";
 
             try {
                 $invoiceId = $client->createInvoice(
@@ -227,7 +229,7 @@ class MainController extends AbstractController
             return $this->render('status-post.html.twig', ['form' => $statusResponse['form']]);
         }
 
-        if ($statusResponse['status'] === 'pending') {
+        if ($statusResponse['status'] === 'pending' && empty($statusResponse['url'])) {
             sleep(10);
             return $this->redirectToRoute('transaction-status', ['orderId' => $orderId]);
         }
