@@ -3,11 +3,11 @@
 namespace App\Service;
 
 use App\Entity\Order;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\RequestOptions;
+use GuzzleHttp\{ClientInterface, RequestOptions};
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\{CacheInterface, ItemInterface};
 
 /**
  * Class PayopClient
@@ -16,51 +16,65 @@ use Symfony\Contracts\Cache\ItemInterface;
 class PayopClient
 {
     /**
-     * @var \GuzzleHttp\ClientInterface
+     * Client.
+     *
+     * @var ClientInterface $client
      */
     private $client;
 
     /**
-     * Payop app public key
+     * Project identifier.
      *
-     * @var string
+     * @var string $projectIdentifier
+     */
+    private $projectIdentifier;
+
+    /**
+     * Payop app public key.
+     *
+     * @var string $publicKey
      */
     private $publicKey;
 
     /**
-     * Payop app secret key
+     * Payop app secret key.
      *
-     * @var string
+     * @var string $secretKey
      */
     private $secretKey;
 
     /**
-     * Authentication access token
+     * Authentication access token.
      *
-     * @var string
+     * @var string $accessToken
      */
     private $accessToken;
 
     /**
-     * @var \Symfony\Contracts\Cache\CacheInterface
+     * Cache pool.
+     *
+     * @var CacheInterface $cachePool
      */
     private $cachePool;
 
     /**
-     * @param \GuzzleHttp\ClientInterface $client
+     * @param ClientInterface $client
+     * @param string $projectIdentifier
      * @param string $publicKey
      * @param string $secretKey
      * @param string $accessToken
-     * @param \Symfony\Contracts\Cache\CacheInterface $cachePool
+     * @param CacheInterface $cachePool
      */
     public function __construct(
         ClientInterface $client,
+        string $projectIdentifier,
         string $publicKey,
         string $secretKey,
         string $accessToken,
         CacheInterface $cachePool
     ) {
         $this->client = $client;
+        $this->projectIdentifier = $projectIdentifier;
         $this->publicKey = $publicKey;
         $this->secretKey = $secretKey;
         $this->accessToken = $accessToken;
@@ -68,39 +82,44 @@ class PayopClient
     }
 
     /**
-     * Get merchant payment methods
+     * Get merchant payment methods.
      *
      * @return array
      *
-     * @throws \Psr\Cache\InvalidArgumentException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getPaymentMethods() : array
     {
-        $paymentMethods = $this->cachePool->get('paymentMethods', function(ItemInterface $item) {
-            $item->expiresAt((new \DateTimeImmutable())->modify('+5 min'));
-
+        return $this->cachePool->get('paymentMethods', function(ItemInterface $item) {
+            $item->expiresAt((new \DateTimeImmutable())->modify('+15 min'));
             $response = $this->client->request(
                 Request::METHOD_GET,
-                'instrument-settings/payment-methods/available-for-user',
+                sprintf(
+                    'instrument-settings/payment-methods/available-for-application/%s',
+                    $this->projectIdentifier
+                ),
                 [RequestOptions::HEADERS => ['token' => $this->accessToken]]
             );
+            $data = json_decode($response->getBody()->getContents(), true)['data'];
+            $methods = [];
 
-            return json_decode($response->getBody()->getContents(), true)['data'];
+            foreach ($data as $value) {
+                $methods[] = $value['paymentMethod'];
+            }
+
+            return $methods;
         });
-
-        return $paymentMethods;
     }
 
     /**
-     * @param \App\Entity\Order $order
+     * @param Order $order
      * @param array $payer
      * @param $resultUrl
      * @param $failUrl
      * @param string|null $pmId
      *
      * @return string
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function createInvoice(
         Order $order,
@@ -161,8 +180,8 @@ class PayopClient
      *
      * @return array
      *
-     * @throws \Psr\Cache\InvalidArgumentException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws InvalidArgumentException
+     * @throws GuzzleException
      */
     public function getInvoice(string $invoiceId) : array
     {
@@ -188,7 +207,7 @@ class PayopClient
      * @param string|null $cardToken
      *
      * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function createTransaction(
         string $invoiceId,
@@ -220,7 +239,7 @@ class PayopClient
      * @param array $card
      *
      * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function createCardToken(string $invoiceId, array $card) : array
     {
@@ -248,7 +267,7 @@ class PayopClient
      * @param string $txid
      *
      * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function checkTransactionStatus(string $txid) : array
     {
@@ -264,7 +283,7 @@ class PayopClient
      * @param string $txid
      *
      * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function getTransaction(string $txid) : array
     {
@@ -278,7 +297,7 @@ class PayopClient
     }
 
     /**
-     * @param \App\Entity\Order $order
+     * @param Order $order
      *
      * @return string
      */

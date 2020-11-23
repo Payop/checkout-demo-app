@@ -3,14 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Repository\OrderRepository;
-use App\Repository\ProductRepository;
+use App\Repository\{OrderRepository, ProductRepository};
 use App\Service\PayopClient;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -23,9 +23,9 @@ class MainController extends AbstractController
     /**
      * @Route("/", name="homepage")
      *
-     * @param \App\Repository\ProductRepository $pr
+     * @param ProductRepository $pr
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function homepage(ProductRepository $pr) : Response
     {
@@ -40,10 +40,10 @@ class MainController extends AbstractController
      * @Route("/order/create/{productId}", name="create-order")
      *
      * @param string $productId
-     * @param \App\Repository\ProductRepository $pr
-     * @param \Doctrine\ORM\EntityManagerInterface $em
+     * @param ProductRepository $pr
+     * @param EntityManagerInterface $em
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function createOrder(
         string $productId,
@@ -61,16 +61,14 @@ class MainController extends AbstractController
     /**
      * @Route("/order/{orderId}/chpm/", name="order-chpm")
      *
-     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param Request $request
      * @param string $orderId
-     * @param \App\Repository\OrderRepository $or
-     * @param \App\Service\PayopClient $client
-     * @param \Symfony\Contracts\Cache\CacheInterface $pool
-     * @param \Doctrine\ORM\EntityManagerInterface $em
+     * @param OrderRepository $or
+     * @param PayopClient $client
+     * @param EntityManagerInterface $em
      *
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return Response
+     * @throws InvalidArgumentException
      */
     public function choosePaymentMethod(
         Request $request,
@@ -126,15 +124,15 @@ class MainController extends AbstractController
     /**
      * @Route("/order/{orderId}/before-payment-transaction", name="before-payment-transaction")
      *
-     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param Request $request
      * @param string $orderId
-     * @param \App\Repository\OrderRepository $or
-     * @param \Doctrine\ORM\EntityManagerInterface $em
-     * @param \App\Service\PayopClient $client
+     * @param OrderRepository $or
+     * @param EntityManagerInterface $em
+     * @param PayopClient $client
      *
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function beforeCreatePaymentTransaction(
         Request $request,
@@ -149,6 +147,7 @@ class MainController extends AbstractController
         // 1. if paymentMethod.formType is "cards" - create transaction request require Card Token. So next step is - card form
         // 2. if paymentMethod.formType is not "cards" - we can make request to create transaction.
         $invoice = $client->getInvoice($order->getPayopInvoiceId());
+
         if ($invoice['paymentMethod']['formType'] === 'cards') {
             return $this->redirectToRoute('bank-card', ['orderId' => $orderId]);
         }
@@ -164,15 +163,15 @@ class MainController extends AbstractController
      *
      * @Route("/order/{orderId}/bank-card", name="bank-card")
      *
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @param \App\Repository\OrderRepository $or
-     * @param \App\Service\PayopClient $client
-     * @param \Doctrine\ORM\EntityManagerInterface $em
+     * @param Request $request
+     * @param OrderRepository $or
+     * @param PayopClient $client
+     * @param EntityManagerInterface $em
      * @param string $orderId
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return RedirectResponse|Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function cardForm(
         Request $request,
@@ -208,11 +207,11 @@ class MainController extends AbstractController
      * @Route("/order/{orderId}/tx-status", name="transaction-status")
      *
      * @param string $orderId
-     * @param \App\Repository\OrderRepository $or
-     * @param \App\Service\PayopClient $client
+     * @param OrderRepository $or
+     * @param PayopClient $client
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return RedirectResponse|Response
+     * @throws GuzzleException
      */
     public function checkTransactionStatus(
         string $orderId,
@@ -268,9 +267,9 @@ class MainController extends AbstractController
      *
      * @param string $id
      * @param string $state
-     * @param \App\Repository\OrderRepository $or
+     * @param OrderRepository $or
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     public function resultPage(
         string $id,
@@ -290,13 +289,14 @@ class MainController extends AbstractController
     /**
      * @Route("/ipn", name="ipn")
      *
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @param \App\Service\PayopClient $client
-     * @param \App\Repository\OrderRepository $or
-     * @param \Doctrine\ORM\EntityManagerInterface $em
+     * @param Request $request
+     * @param PayopClient $client
+     * @param OrderRepository $or
+     * @param EntityManagerInterface $em
      *
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param LoggerInterface $logger
+     * @return Response
+     * @throws GuzzleException
      */
     public function ipn(
         Request $request,
@@ -332,15 +332,15 @@ class MainController extends AbstractController
     }
 
     /**
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @param \App\Repository\OrderRepository $or
-     * @param \Doctrine\ORM\EntityManagerInterface $em
-     * @param \App\Service\PayopClient $client
+     * @param Request $request
+     * @param OrderRepository $or
+     * @param EntityManagerInterface $em
+     * @param PayopClient $client
      * @param string $orderId
      * @param string|null $cardToken
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     private function createTransaction(
         Request $request,
