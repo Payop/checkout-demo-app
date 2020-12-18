@@ -33,6 +33,7 @@ services:
     App\Service\PayopClient:
         arguments:
             - '@httpClient'
+            - '%env(PAYOP_APP_IDENTIFIER)%'
             - '%env(PAYOP_APP_PUBLIC_KEY)%'
             - '%env(PAYOP_APP_SECRET_KEY)%'
             - '%env(PAYOP_USER_ACCESS_TOKEN)%'
