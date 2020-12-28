@@ -31,7 +31,18 @@
 
     <script>
         const showFields = (elem) => {
-            const fields = JSON.parse(elem.dataset.fields);
+            const fields = [
+                {
+                    "name": 'email',
+                    "type": "email",
+                    "required": true
+                },
+                {
+                    "name": 'name',
+                    "type": 'text',
+                    "required": false
+                }
+            ];
             const container = document.getElementById('fields-container');
             container.innerText = '';
             fields.map(field => {
