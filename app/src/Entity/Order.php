@@ -2,12 +2,11 @@
 
 namespace App\Entity;
 
+use App\Repository\OrderRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\OrderRepository")
- * @ORM\Table(name="`order`")
- */
+#[ORM\Entity(repositoryClass: OrderRepository::class)]
+#[ORM\Table(name: "`order`")]
 class Order
 {
     public const STATUS_NEW = 'new';
@@ -15,56 +14,28 @@ class Order
     public const STATUS_FAILED = 'failed';
     public const STATUS_ACCEPTED = 'accepted';
 
-    /**
-     * @var int
-     *
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @var \App\Entity\Product
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Product")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $product;
 
-    /**
-     * @var \DateTimeInterface
-     *
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: "datetime")]
     private $createdAt;
 
-    /**
-     * @var \DateTimeInterface|null
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: "datetime", nullable: true)]
     private $updatedAt;
 
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private $payopInvoiceId;
 
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private $payopTxid;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: "string", length: 255)]
     private $status;
 
     public function __construct()
@@ -82,7 +53,7 @@ class Order
     }
 
     /**
-     * @return \App\Entity\Product
+     * @return Product
      */
     public function getProduct(): Product
     {
@@ -90,7 +61,7 @@ class Order
     }
 
     /**
-     * @param \App\Entity\Product $product
+     * @param Product $product
      *
      * @return $this
      */

@@ -20,13 +20,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class MainController extends AbstractController
 {
-    /**
-     * @Route("/", name="homepage")
-     *
-     * @param ProductRepository $pr
-     *
-     * @return Response
-     */
+    #[Route(path: "/", name: "homepage")]
     public function homepage(ProductRepository $pr) : Response
     {
         $products = $pr->findAll();
@@ -36,15 +30,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/order/create/{productId}", name="create-order")
-     *
-     * @param string $productId
-     * @param ProductRepository $pr
-     * @param EntityManagerInterface $em
-     *
-     * @return Response
-     */
+    #[Route(path: "/order/create/{productId}", name: "create-order")]
     public function createOrder(
         string $productId,
         ProductRepository $pr,
@@ -58,18 +44,7 @@ class MainController extends AbstractController
         return $this->redirectToRoute('order-chpm', ['orderId' => $order->getId()]);
     }
 
-    /**
-     * @Route("/order/{orderId}/chpm/", name="order-chpm")
-     *
-     * @param Request $request
-     * @param string $orderId
-     * @param OrderRepository $or
-     * @param PayopClient $client
-     * @param EntityManagerInterface $em
-     *
-     * @return Response
-     * @throws InvalidArgumentException
-     */
+    #[Route(path: "/order/{orderId}/chpm/", name: "order-chpm")]
     public function choosePaymentMethod(
         Request $request,
         string $orderId,
@@ -82,7 +57,7 @@ class MainController extends AbstractController
 
         if ($request->isMethod(Request::METHOD_POST) && $request->request->has('pm')) {
             $pmId = $request->request->get('pm');
-            $fields = $request->request->get('fields', []);
+            $fields = $request->request->all()['fields'] ?? [];
 
             $resultUrl = $this->generateUrl('order-result', [
                 'id' => $orderId,
@@ -121,19 +96,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/order/{orderId}/before-payment-transaction", name="before-payment-transaction")
-     *
-     * @param Request $request
-     * @param string $orderId
-     * @param OrderRepository $or
-     * @param EntityManagerInterface $em
-     * @param PayopClient $client
-     *
-     * @return Response
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
+    #[Route(path: "/order/{orderId}/before-payment-transaction", name: "before-payment-transaction")]
     public function beforeCreatePaymentTransaction(
         Request $request,
         string $orderId,
@@ -158,21 +121,7 @@ class MainController extends AbstractController
         return $this->redirectToRoute('transaction-status', ['orderId' => $orderId]);
     }
 
-    /**
-     * Create card token
-     *
-     * @Route("/order/{orderId}/bank-card", name="bank-card")
-     *
-     * @param Request $request
-     * @param OrderRepository $or
-     * @param PayopClient $client
-     * @param EntityManagerInterface $em
-     * @param string $orderId
-     *
-     * @return RedirectResponse|Response
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
+    #[Route(path: "/order/{orderId}/bank-card", name: "bank-card")]
     public function cardForm(
         Request $request,
         OrderRepository $or,
@@ -201,18 +150,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    /**
-     * Just show result page
-     *
-     * @Route("/order/{orderId}/tx-status", name="transaction-status")
-     *
-     * @param string $orderId
-     * @param OrderRepository $or
-     * @param PayopClient $client
-     *
-     * @return RedirectResponse|Response
-     * @throws GuzzleException
-     */
+    #[Route(path: "/order/{orderId}/tx-status", name: "transaction-status")]
     public function checkTransactionStatus(
         string $orderId,
         OrderRepository $or,
@@ -260,17 +198,7 @@ class MainController extends AbstractController
         // 5. Exceptional case. Something went wrong on the Payop side. Contact our support.
     }
 
-    /**
-     * Just show result page
-     *
-     * @Route("/order/{id}/result/{state}", name="order-result")
-     *
-     * @param string $id
-     * @param string $state
-     * @param OrderRepository $or
-     *
-     * @return Response
-     */
+    #[Route(path: "/order/{id}/result/{state}", name: "order-result")]
     public function resultPage(
         string $id,
         string $state,
@@ -286,18 +214,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/ipn", name="ipn")
-     *
-     * @param Request $request
-     * @param PayopClient $client
-     * @param OrderRepository $or
-     * @param EntityManagerInterface $em
-     *
-     * @param LoggerInterface $logger
-     * @return Response
-     * @throws GuzzleException
-     */
+    #[Route(path: "/ipn", name: "ipn")]
     public function ipn(
         Request $request,
         PayopClient $client,

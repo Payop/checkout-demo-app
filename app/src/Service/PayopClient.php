@@ -104,7 +104,7 @@ class PayopClient
             $methods = [];
 
             foreach ($data as $value) {
-                $methods[] = $value['paymentMethod'];
+                $methods[] = $value;
             }
 
             return $methods;
