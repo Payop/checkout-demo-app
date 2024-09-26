@@ -2,41 +2,24 @@
 
 namespace App\Entity;
 
+use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ProductRepository")
- */
+#[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {
-    /**
-     * @var int
-     *
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: "string", length: 255)]
     private $name;
 
-    /**
-     * @var float
-     *
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: "float")]
     private $price;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: "string", length: 255)]
     private $currency;
 
     /**
