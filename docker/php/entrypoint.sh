@@ -10,8 +10,4 @@ groupmod -g "$GID_VAR" www-data
 chown -R www-data:www-data /var/www
 chmod -R 0777 /var/www/app
 
-composer install --no-interaction --prefer-dist --optimize-autoloader
-
-php bin/console doctrine:migrations:migrate --no-interaction
-
 /usr/local/sbin/php-fpm --nodaemonize
