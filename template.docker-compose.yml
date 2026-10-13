@@ -15,6 +15,11 @@ services:
             - "./app/public:/var/www/app/public"
         ports:
             - "${NGINX_PORT}:80"
+        healthcheck:
+            test: [ "CMD", "curl", "-f", "http://localhost/" ]
+            interval: 30s
+            timeout: 10s
+            retries: 5
         depends_on:
             - checkout.php
         networks:
@@ -36,7 +41,7 @@ services:
             XDEBUG_CONFIG: remote_host=10.254.254.254
             PHP_IDE_CONFIG: serverName=_
         extra_hosts:
-          - payop.paydo.local:10.254.254.254
+          - payop.payop.local:10.254.254.254
         expose:
             - "9000"
         volumes:

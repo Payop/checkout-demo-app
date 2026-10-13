@@ -1,4 +1,4 @@
-FROM 211725788353.dkr.ecr.eu-west-1.amazonaws.com/paydo-main:php7.4.8-fpm
+FROM php:7.4-fpm-alpine3.16
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 RUN echo 'PS1="\[\033[36m\]\u\[\033[m\]@\[\033[95;1m\]checkout.php:\[\033[34m\]\w\[\033[m\]\$ "' >> ~/.bashrc
@@ -16,16 +16,10 @@ RUN echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/docker-php-ext
     && echo "opcache.consistency_checks=1"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && echo "opcache.save_comments=1"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_connect_back=0" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_handler=dbgp" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.max_nesting_level=-1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
 WORKDIR /var/www/app
 ADD entrypoint.sh /usr/local/bin/
 
-CMD ["entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD php -r '($c = @fsockopen("127.0.0.1", 9000, $e, $s, 3)) ? fclose($c) : exit(1);'
+
+CMD ["sh","/usr/local/bin/entrypoint.sh"]
