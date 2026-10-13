@@ -33,5 +33,5 @@ sed -e "s/{{ UID_VALUE }}/${UID_VALUE}/g" \
     > docker-compose.yml
 
 "${compose[@]}" up -d --build
-  
+
 echo "done"

@@ -1,4 +1,4 @@
-FROM php:7.4.8-fpm
+FROM php:7.4-fpm-alpine3.16
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 RUN echo 'PS1="\[\033[36m\]\u\[\033[m\]@\[\033[95;1m\]checkout.php:\[\033[34m\]\w\[\033[m\]\$ "' >> ~/.bashrc
@@ -19,4 +19,7 @@ RUN echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/docker-php-ext
 WORKDIR /var/www/app
 ADD entrypoint.sh /usr/local/bin/
 
-CMD ["entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD php -r '($c = @fsockopen("127.0.0.1", 9000, $e, $s, 3)) ? fclose($c) : exit(1);'
+
+CMD ["sh","/usr/local/bin/entrypoint.sh"]
