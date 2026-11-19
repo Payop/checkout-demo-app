@@ -100,14 +100,11 @@ class PayopClient
                 ),
                 [RequestOptions::HEADERS => ['token' => $this->accessToken]]
             );
-            $data = json_decode($response->getBody()->getContents(), true)['data'];
-            $methods = [];
+            $decoded = json_decode($response->getBody()->getContents(), true);
 
-            foreach ($data as $value) {
-                $methods[] = $value['paymentMethod'];
-            }
-
-            return $methods;
+            // The API returns the list of payment methods directly
+            // (identifier, title, formType, config...), there is no nested "paymentMethod" key.
+            return $decoded['data'] ?? [];
         });
     }
 
