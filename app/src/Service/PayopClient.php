@@ -104,7 +104,7 @@ class PayopClient
 
             // The API returns the list of payment methods directly
             // (identifier, title, formType, config...), there is no nested "paymentMethod" key.
-            return $decoded['data'] ?? [];
+            return is_array($decoded['data'] ?? null) ? $decoded['data'] : [];
         });
     }
 
